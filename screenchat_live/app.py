@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 import os
+import signal
 
 from dotenv import load_dotenv
 from google import genai
@@ -93,10 +94,20 @@ async def run_profile(session_options: LiveSessionOptions, runtime: ProfileRunti
 
 def run_profile_cli(session_options: LiveSessionOptions) -> None:
     runtime = build_profile_runtime(session_options)
+    handled_signals = tuple(sig for sig in (signal.SIGTERM, getattr(signal, "SIGHUP", None)) if sig is not None)
+    previous_handlers = {sig: signal.getsignal(sig) for sig in handled_signals}
+
+    def _handle_termination(_signum: int, _frame: object) -> None:
+        raise KeyboardInterrupt
+
+    for sig in handled_signals:
+        signal.signal(sig, _handle_termination)
     try:
         asyncio.run(run_profile(session_options, runtime))
     except KeyboardInterrupt:
         runtime.transcript_manager.clear_live()
         print(console_output.interrupted_by_user())
     finally:
+        for sig, handler in previous_handlers.items():
+            signal.signal(sig, handler)
         remove_empty_workspace_note_file(runtime.runtime_config)
