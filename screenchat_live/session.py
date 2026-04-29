@@ -121,9 +121,7 @@ class LiveMessageProcessor:
             if part.text:
                 text_parts.append(part.text.strip())
             if part.inline_data and isinstance(part.inline_data.data, bytes):
-                live_session_state.model_speaking_until = (
-                    time.monotonic() + self.session_options.audio.model_speaking_hangover_seconds
-                )
+                live_session_state.model_speaking_until = time.monotonic() + self.session_options.audio.model_speaking_hangover_seconds
                 drain_queue(audio_queue_mic)
                 audio_queue_output.put_nowait(part.inline_data.data)
         if text_parts:
