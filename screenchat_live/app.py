@@ -31,7 +31,7 @@ class ProfileRuntime:
 
 
 def build_runtime_config(session_options: LiveSessionOptions) -> RuntimeConfig:
-    target_repo = resolve_target_repo()
+    target_repo = resolve_target_repo(session_options.target_repo)
     workspace_root, workspace_display_path = build_workspace_root(
         target_repo,
         session_options.workspace_subdir,

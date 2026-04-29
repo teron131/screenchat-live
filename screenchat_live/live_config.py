@@ -61,6 +61,7 @@ class LiveSessionOptions:
     model: str
     voice_name: str | None = None
     workspace_subdir: str | None = None
+    target_repo: bool = False
     media_resolution: str = "MEDIA_RESOLUTION_MEDIUM"
     thinking_level: types.ThinkingLevel = types.ThinkingLevel.MEDIUM
     context_window_trigger_tokens: int = 104857
@@ -87,6 +88,7 @@ def build_profile_session_options(
     model: str = DEFAULT_MODEL,
     voice_name: str | None = DEFAULT_VOICE_NAME,
     workspace_subdir: str | None = None,
+    target_repo: bool = False,
     user_label: str = "User",
     audio: AudioConfig | None = None,
     screen_share: ScreenShareConfig | None = None,
@@ -95,6 +97,7 @@ def build_profile_session_options(
         model=model,
         voice_name=voice_name,
         workspace_subdir=workspace_subdir,
+        target_repo=target_repo,
         transcript=TranscriptConfig(
             profile_system_prompt_template=profile_system_prompt_template,
             user_label=user_label,

@@ -59,6 +59,8 @@ For the screen-aware voice coding companion:
 uv run python codex_prompter.py /path/to/repo
 ```
 
+If the repo is not passed, `codex_prompter.py` prompts for it. Press Enter at that prompt to use this project root.
+
 `codex_prompter.py` watches the shared screen and acts as a voice coding companion. It is not the actual coding assistant: it micro-brainstorms, lightly inspects the target repository, and turns rough spoken intent into a clearer coding-agent prompt when useful. It is especially meant for visual/UI edit prompting, where it can use what is visible on screen to understand references like "this panel", "that input", or "make it look more like this".
 
 Repository inspection is intentionally scoped to the repo path you pass on launch. Use the exact project repo, not a parent workspace directory, so searches stay focused and avoid unrelated files. The profile should inspect only enough to understand architecture, entrypoints, file relationships, or symbol references that help elaborate the prompt. To work on a different repo, restart with that repo path.

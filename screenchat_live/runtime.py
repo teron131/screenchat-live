@@ -27,8 +27,15 @@ class RuntimeConfig:
     reconnect_history_file: Path
 
 
-def resolve_target_repo() -> Path:
-    target_repo = sys.argv[1] if len(sys.argv) > 1 else str(DEFAULT_TARGET_REPO)
+def resolve_target_repo(target_repo: bool = False) -> Path:
+    if len(sys.argv) > 1:
+        target_repo = sys.argv[1]
+    elif target_repo:
+        default_repo = str(DEFAULT_TARGET_REPO)
+        target_repo = input(f"Target repository path [{default_repo}]: ").strip() or default_repo
+    else:
+        target_repo = str(DEFAULT_TARGET_REPO)
+
     target_path = Path(target_repo).expanduser().resolve()
     if not target_path.exists():
         raise FileNotFoundError(f"Target repository not found: {target_path}")

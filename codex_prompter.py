@@ -47,6 +47,7 @@ Keep responses brief and action-oriented.
 
 SESSION_OPTIONS = build_profile_session_options(
     profile_system_prompt_template=PROFILE_SYSTEM_PROMPT_TEMPLATE,
+    target_repo=True,
     audio=AudioConfig(enabled=True),
     screen_share=ScreenShareConfig(enabled=True),
     tools=(create_repo_inspection_tool(), *create_desktop_tools()),
