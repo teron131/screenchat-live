@@ -53,13 +53,17 @@ uv run python brainstormer.py
 
 If multiple monitors are available and no screen index is passed, `code_reviewer.py` prompts you to choose which screen to share by name. `brainstormer.py` does not use screen sharing.
 
-For the Codex voice prompt profile:
+For the screen-aware voice coding companion:
 
 ```bash
 uv run python codex_prompter.py /path/to/repo
 ```
 
-`codex_prompter.py` watches the shared screen and helps turn rough spoken intent into a clearer coding-agent prompt with relevant visible context, constraints, and verification expectations. It is meant for quick voice micro-brainstorming and for visual/UI edit prompting, where it can use what is visible on screen to understand references like "this panel", "that input", or "make it look more like this". It should build an understanding with you before creating the final detailed prompt, and it only types the prompt when explicitly asked. It exposes two model tools: one to list visible windows and one to type the final prompt. The typing tool can optionally focus a visible prompt window and click absolute screen coordinates before either inserting text or replacing the current prompt field.
+`codex_prompter.py` watches the shared screen and acts as a voice coding companion. It can micro-brainstorm, answer code questions, inspect the target repository with read-only commands, and turn rough spoken intent into a clearer coding-agent prompt when useful. It is especially meant for visual/UI edit prompting, where it can use what is visible on screen to understand references like "this panel", "that input", or "make it look more like this".
+
+Repository inspection is intentionally scoped to the repo path you pass on launch. Use the exact project repo, not a parent workspace directory, so searches stay focused and avoid unrelated files. To work on a different repo, restart with that repo path.
+
+The profile exposes read-only repo inspection plus two desktop tools: one to list visible windows and one to type a final prompt when explicitly asked. The typing tool can optionally focus a visible prompt window and click absolute screen coordinates before either inserting text or replacing the current prompt field.
 
 macOS often does not show a permission pop-up for this path. If clicking or typing fails with an assistive-access error, manually add the app you launch from in `System Settings -> Privacy & Security -> Accessibility`, such as Terminal, iTerm, Visual Studio Code, or Codex. Quit and reopen that app after enabling it. Screen Recording permission is separate and only covers screen sharing.
 
@@ -69,6 +73,6 @@ If the typing tool reports success but no text appears, the prompt field was pro
 
 - `code_reviewer.py` stays read-only and uses allowlisted shell commands for repo inspection.
 - `brainstormer.py` is audio-only, skips the screen-selection flow, and edits files inside `canvas/`, including a timestamped per-session Markdown draft.
-- `codex_prompter.py` is for supervised prompt composition, not broad autonomous computer control. It can type only when you explicitly ask it to apply a final prompt.
+- `codex_prompter.py` is a read-only coding companion, not an implementation agent. It can inspect the target repo and type only when you explicitly ask it to apply a final prompt.
 - Screen share uses Pillow and sends low-rate JPEG frames to Gemini Live when enabled.
 - Input and output speech transcripts are shown live in the terminal.
