@@ -59,11 +59,11 @@ For the screen-aware voice coding companion:
 uv run python codex_prompter.py /path/to/repo
 ```
 
-`codex_prompter.py` watches the shared screen and acts as a voice coding companion. It can micro-brainstorm, answer code questions, inspect the target repository with read-only commands, and turn rough spoken intent into a clearer coding-agent prompt when useful. It is especially meant for visual/UI edit prompting, where it can use what is visible on screen to understand references like "this panel", "that input", or "make it look more like this".
+`codex_prompter.py` watches the shared screen and acts as a voice coding companion. It is not the actual coding assistant: it micro-brainstorms, lightly inspects the target repository, and turns rough spoken intent into a clearer coding-agent prompt when useful. It is especially meant for visual/UI edit prompting, where it can use what is visible on screen to understand references like "this panel", "that input", or "make it look more like this".
 
-Repository inspection is intentionally scoped to the repo path you pass on launch. Use the exact project repo, not a parent workspace directory, so searches stay focused and avoid unrelated files. To work on a different repo, restart with that repo path.
+Repository inspection is intentionally scoped to the repo path you pass on launch. Use the exact project repo, not a parent workspace directory, so searches stay focused and avoid unrelated files. The profile should inspect only enough to understand architecture, entrypoints, file relationships, or symbol references that help elaborate the prompt. To work on a different repo, restart with that repo path.
 
-The profile exposes read-only repo inspection plus two desktop tools: one to list visible windows and one to type a final prompt when explicitly asked. The typing tool can optionally focus a visible prompt window and click absolute screen coordinates before either inserting text or replacing the current prompt field.
+The profile exposes the `inspect_repo` read-only repo inspection tool plus two desktop tools: one to list visible windows and one to type a final prompt when explicitly asked. The typing tool can optionally focus a visible prompt window and click absolute screen coordinates before either inserting text or replacing the current prompt field.
 
 macOS often does not show a permission pop-up for this path. If clicking or typing fails with an assistive-access error, manually add the app you launch from in `System Settings -> Privacy & Security -> Accessibility`, such as Terminal, iTerm, Visual Studio Code, or Codex. Quit and reopen that app after enabling it. Screen Recording permission is separate and only covers screen sharing.
 
@@ -71,8 +71,8 @@ If the typing tool reports success but no text appears, the prompt field was pro
 
 ## Notes
 
-- `code_reviewer.py` stays read-only and uses allowlisted shell commands for repo inspection.
+- `code_reviewer.py` stays read-only and uses the `inspect_repo` allowlisted repo inspection tool.
 - `brainstormer.py` is audio-only, skips the screen-selection flow, and edits files inside `canvas/`, including a timestamped per-session Markdown draft.
-- `codex_prompter.py` is a read-only coding companion, not an implementation agent. It can inspect the target repo and type only when you explicitly ask it to apply a final prompt.
+- `codex_prompter.py` is a read-only prompt companion, not an implementation agent. It should use repo inspection lightly and type only when you explicitly ask it to apply a final prompt.
 - Screen share uses Pillow and sends low-rate JPEG frames to Gemini Live when enabled.
 - Input and output speech transcripts are shown live in the terminal.

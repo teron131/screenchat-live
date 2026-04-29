@@ -1,3 +1,5 @@
+"""Read-only repository inspection tools for Gemini Live profiles."""
+
 from collections.abc import Callable
 from pathlib import Path
 import shlex
@@ -9,8 +11,8 @@ from google.genai import types
 from .live_config import LiveTool
 from .runtime import RuntimeConfig
 
-SAFE_COMMANDS = {"pwd", "ls", "rg", "cat", "sed", "head", "tail", "wc", "find", "git"}
-SAFE_GIT_SUBCOMMANDS = {"status", "diff", "log", "show"}
+ALLOWLISTED_COMMANDS = {"pwd", "ls", "rg", "cat", "sed", "head", "tail", "wc", "find", "git"}
+ALLOWLISTED_GIT_SUBCOMMANDS = {"status", "diff", "log", "show"}
 DISALLOWED_SHELL_TOKENS = {"|", "||", "&", "&&", ";", ">", ">>", "<", "<<", "`"}
 
 ArgValidator = Callable[[list[str]], str | None]
@@ -100,7 +102,7 @@ def blocked_command(command: str, error: str) -> dict[str, object]:
     return {"ok": False, "command": command, "error": error}
 
 
-def run_bash_locally(command: str, target_repo: Path) -> dict[str, object]:
+def run_repo_inspection_command(command: str, target_repo: Path) -> dict[str, object]:
     if any(token in command for token in DISALLOWED_SHELL_TOKENS) or "$(" in command:
         return blocked_command(command, "Command contains disallowed shell syntax.")
 
@@ -113,12 +115,12 @@ def run_bash_locally(command: str, target_repo: Path) -> dict[str, object]:
         return blocked_command(command, "Command must not be empty.")
 
     executable = argv[0]
-    if executable not in SAFE_COMMANDS:
+    if executable not in ALLOWLISTED_COMMANDS:
         return blocked_command(command, f"Command `{executable}` is not allowlisted.")
     resolved_executable = shutil.which(executable)
     if not resolved_executable:
         return blocked_command(command, f"Command `{executable}` is not available.")
-    if executable == "git" and (len(argv) < 2 or argv[1] not in SAFE_GIT_SUBCOMMANDS):
+    if executable == "git" and (len(argv) < 2 or argv[1] not in ALLOWLISTED_GIT_SUBCOMMANDS):
         return blocked_command(command, "Only git status, diff, log, and show are allowed.")
     path_error = validate_repo_scoped_args(argv)
     if path_error:
@@ -143,18 +145,18 @@ def run_bash_locally(command: str, target_repo: Path) -> dict[str, object]:
     }
 
 
-def handle_run_bash_tool(args: dict[str, object], runtime_config: RuntimeConfig) -> dict[str, object]:
+def handle_repo_inspection_tool(args: dict[str, object], runtime_config: RuntimeConfig) -> dict[str, object]:
     command = args.get("command", "")
     if not isinstance(command, str):
         return blocked_command("", "Tool argument `command` must be a string.")
-    return run_bash_locally(command, runtime_config.target_repo)
+    return run_repo_inspection_command(command, runtime_config.target_repo)
 
 
-def create_run_bash_tool() -> LiveTool:
+def create_repo_inspection_tool() -> LiveTool:
     return LiveTool(
         declaration=types.FunctionDeclaration(
-            name="run_bash",
-            description="Run a short read-only shell command in the repository root to inspect files or git state.",
+            name="inspect_repo",
+            description="Inspect files or git state with a short allowlisted, read-only command in the repository root.",
             parametersJsonSchema={
                 "type": "object",
                 "properties": {
@@ -166,5 +168,5 @@ def create_run_bash_tool() -> LiveTool:
                 "required": ["command"],
             },
         ),
-        handler=handle_run_bash_tool,
+        handler=handle_repo_inspection_tool,
     )
