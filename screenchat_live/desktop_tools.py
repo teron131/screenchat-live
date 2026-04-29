@@ -75,15 +75,21 @@ def _run_osascript(command: str, script_name: str, *args: object) -> dict[str, o
     if not script_path.exists():
         return _error_result(command, f"AppleScript file not found: {script_path}")
 
-    completed = subprocess.run(  # noqa: S603 - executable is resolved above and args are passed without a shell.
-        [osascript, str(script_path), *[str(arg) for arg in args]],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=OSASCRIPT_TIMEOUT_SECONDS,
-        check=False,
-    )
+    try:
+        completed = subprocess.run(  # noqa: S603 - executable is resolved above and args are passed without a shell.
+            [osascript, str(script_path), *[str(arg) for arg in args]],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=OSASCRIPT_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return _error_result(command, f"`osascript` timed out after {exc.timeout} seconds while running {script_name}.")
+    except OSError as exc:
+        return _error_result(command, f"Unable to run `osascript`: {exc}")
+
     if completed.returncode != 0:
         return _error_result(command, _format_osascript_error(completed.stderr))
     return _ok_result(command, stdout=completed.stdout.strip())
@@ -101,16 +107,22 @@ def _set_clipboard_text(command: str, text: str) -> dict[str, object] | None:
     if not pbcopy:
         return _error_result(command, "`pbcopy` is not available on this system.")
 
-    completed = subprocess.run(  # noqa: S603 - executable is resolved above.
-        [pbcopy],
-        input=text,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=CLIPBOARD_TIMEOUT_SECONDS,
-        check=False,
-    )
+    try:
+        completed = subprocess.run(  # noqa: S603 - executable is resolved above.
+            [pbcopy],
+            input=text,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=CLIPBOARD_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return _error_result(command, f"`pbcopy` timed out after {exc.timeout} seconds while setting clipboard text.")
+    except OSError as exc:
+        return _error_result(command, f"Unable to run `pbcopy`: {exc}")
+
     if completed.returncode != 0:
         return _error_result(command, completed.stderr.strip() or "Unable to set clipboard text.")
     return None

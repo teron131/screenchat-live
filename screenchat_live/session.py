@@ -74,7 +74,14 @@ class LiveMessageProcessor:
                     )
                 )
                 continue
-            result = await asyncio.to_thread(tool_handler, function_call.args or {}, self.runtime_config)
+            try:
+                result = await asyncio.to_thread(tool_handler, function_call.args or {}, self.runtime_config)
+            except Exception as exc:
+                result = {
+                    "ok": False,
+                    "command": function_call.name,
+                    "error": f"Tool handler failed: {exc}",
+                }
             self.transcript_manager.commit_live()
             print(
                 console_output.tool_result(
